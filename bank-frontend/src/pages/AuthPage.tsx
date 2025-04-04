@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../lib/axios";
-import { LoginResponse, JoinResponse } from "../src/\bauth";
+import { LoginResponse, JoinResponse } from "../src/auth";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);

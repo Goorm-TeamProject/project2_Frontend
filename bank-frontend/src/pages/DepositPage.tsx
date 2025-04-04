@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../lib/axios";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 interface DepositResponse {
   transactionId: string;
@@ -15,38 +16,58 @@ interface DepositResponse {
   createdAt: string;
 }
 
+interface GetMyAccountResponse {
+    accountNumber: string;
+    balance: number;
+    createdAt: string;
+  }
+  
+
 interface DecodedToken {
   accountNumber: string;
   [key: string]: any;
 }
+
+
 
 export default function DepositPage() {
   const [accountNumber, setAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
-      try {
-        const decoded = jwtDecode<DecodedToken>(token);
-        setAccountNumber(decoded.accountNumber || "");
-      } catch (error) {
-        console.error("JWT 디코딩 실패", error);
-      }
+        axios
+        .get<GetMyAccountResponse[]>("/accounts/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((res) => {
+          setAccountNumber(res.data[0].accountNumber); // ✅ 첫 번째 계좌
+        })
+        .catch(() => setMessage("❌ 계좌 정보를 가져오지 못했습니다."));      
     }
   }, []);
-
+  
   const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
-
+  
     try {
       const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setMessage("❌ 인증 토큰이 없습니다. 다시 로그인 해주세요.");
+        return;
+      }
+  
       const res = await axios.post<DepositResponse>(
         "/transactions/deposit",
         {
-          toAccountNumber: accountNumber, // ✅ 수정된 부분
+          toAccountNumber: accountNumber,
           amount: Number(amount),
         },
         {
@@ -55,12 +76,27 @@ export default function DepositPage() {
           },
         }
       );
+      
+      navigate("/transactions");
 
       setMessage(`✅ 입금 성공! 새로운 잔액: ${res.data.balanceAfter.toLocaleString()}원`);
-    } catch (err) {
-      setMessage("❌ 본인의 계좌만 입금할 수 있습니다.");
+    } catch (err: any) {
+      console.error("💥 입금 오류:", err);
+  
+      const status = err.response?.status;
+  
+      if (status === 403) {
+        setMessage("❌ 본인의 계좌만 입금할 수 없습니다.");
+      } else if (status === 404) {
+        setMessage("❌ 계좌를 찾을 수 없습니다.");
+      } else if (status === 400) {
+        setMessage("❌ 요청 형식이 잘못되었습니다.");
+      } else {
+        setMessage("❌ 입금 중 오류가 발생했습니다. 나중에 다시 시도해주세요.");
+      }
     }
   };
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
