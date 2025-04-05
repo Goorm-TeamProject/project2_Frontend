@@ -20,18 +20,18 @@ export default function AuthPage() {
     try {
       if (isLogin) {
         const res = await axios.post<LoginResponse>("/login", { email, password });
-        localStorage.setItem("accessToken", res.data.accessToken);
-        localStorage.setItem("userId", String(res.data.userId));
+        const token = res.data.accessToken;
+
+        localStorage.setItem("accessToken", token);
 
         try {
-          const accountRes = await axios.post(
+          await axios.post(
             "/accounts",
-            { userId: res.data.userId, balance: 100000 },
-            { headers: { Authorization: `Bearer ${res.data.accessToken}` } }
+            { balance: 100000 },
+            { headers: { Authorization: `Bearer ${token}` } }
           );
-          console.log("✅ 계좌 생성 성공:", accountRes.data);
         } catch (err) {
-          console.log("⚠️ 계좌 생성 스킵 또는 실패", err);
+          console.log("⚠️ 계좌 생성 실패 또는 이미 존재", err);
         }
 
         navigate("/transactions");
@@ -41,8 +41,8 @@ export default function AuthPage() {
         alert("회원가입 성공! 로그인해주세요.");
         setIsLogin(true);
       }
-    } catch (err: any) {
-      setError("오류가 발생했습니다. 입력값을 확인해주세요.");
+    } catch (err) {
+      setError("❌ 오류가 발생했습니다. 이메일 또는 비밀번호를 확인해주세요.");
     }
   };
 
@@ -87,7 +87,7 @@ export default function AuthPage() {
           )}
           <input
             type="email"
-            placeholder="Email or Phone number"
+            placeholder="Email"
             className="border px-4 py-2 rounded-md"
             value={email}
             onChange={(e) => setEmail(e.target.value)}

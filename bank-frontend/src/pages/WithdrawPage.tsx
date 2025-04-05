@@ -9,7 +9,7 @@ interface GetMyAccountResponse {
 }
 
 export default function WithdrawPage() {
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState(""); // string 타입으로 변경
   const [accountNumber, setAccountNumber] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -23,17 +23,20 @@ export default function WithdrawPage() {
             Authorization: `Bearer ${token}`,
           },
         })
-        .then((res) => {
-          setAccountNumber(res.data[0].accountNumber); // 첫 계좌
-        })
+        .then((res) => setAccountNumber(res.data[0].accountNumber))
         .catch(() => setMessage("❌ 계좌 정보를 가져오지 못했습니다."));
     }
   }, []);
 
   const handleWithdraw = async () => {
     const token = localStorage.getItem("accessToken");
-    if (!token) {
-      alert("❌ 로그인 필요");
+    if (!token) return alert("❌ 로그인 필요");
+
+    const amountNumber = Number(amount);
+
+    // ✅ 유효성 검사
+    if (!amount || isNaN(amountNumber) || amountNumber <= 0) {
+      alert("❌ 유효한 출금 금액을 입력해주세요.");
       return;
     }
 
@@ -42,16 +45,13 @@ export default function WithdrawPage() {
         "/transactions/withdraw",
         {
           fromAccountNumber: accountNumber,
-          amount,
+          amount: amountNumber,
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       alert("✅ 출금 완료!");
-      console.log("출금 결과:", res.data);
       navigate("/transactions");
     } catch (err) {
       alert("❌ 출금 실패");
@@ -59,32 +59,48 @@ export default function WithdrawPage() {
     }
   };
 
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">💸 출금하기</h1>
 
-      <div className="mb-4">
-        <label className="text-sm text-gray-600">내 계좌</label>
-        <input
-          type="text"
-          value={accountNumber}
-          className="border px-4 py-2 rounded-md bg-gray-100 text-gray-600"
-          readOnly
-        />
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
+      <div className="fixed top-6 right-6 z-50">
+        <button
+          onClick={() => navigate("/transactions")}
+          className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+        >
+          🏠 홈
+        </button>
       </div>
 
-      <input
-        type="number"
-        value={amount}
-        onChange={(e) => setAmount(Number(e.target.value))}
-        placeholder="출금 금액"
-        className="border px-4 py-2 rounded-md mr-2"
-      />
-      <button onClick={handleWithdraw} className="bg-red-600 text-white px-6 py-2 rounded-md">
-        출금
-      </button>
+      <h1 className="text-2xl font-bold mb-6">💸 출금하기</h1>
 
-      {message && <p className="mt-4 text-red-500 text-sm">{message}</p>}
+      <div className="w-full max-w-md flex flex-col gap-4">
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-600 mb-1">내 계좌</label>
+          <input
+            type="text"
+            value={accountNumber}
+            readOnly
+            className="border px-4 py-2 rounded-md bg-gray-100 text-gray-600"
+          />
+        </div>
+
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="출금 금액"
+          className="border px-4 py-2 rounded-md"
+        />
+
+        <button
+          onClick={handleWithdraw}
+          className="bg-red-600 hover:bg-red-700 text-white w-full py-3 rounded-md font-semibold"
+        >
+          출금
+        </button>
+
+        {message && <p className="mt-4 text-red-500 text-sm text-center">{message}</p>}
+      </div>
     </div>
   );
 }
