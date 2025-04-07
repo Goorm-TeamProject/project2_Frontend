@@ -46,7 +46,7 @@ export default function AuthPage() {
     }
   };
 
-  return (
+  return ( 
     <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4">
       <div className="text-left w-full max-w-md mb-6">
         <h1 className="text-4xl font-bold">
@@ -68,11 +68,6 @@ export default function AuthPage() {
           >
             Sign in
           </button>
-        </div>
-
-        <div className="flex items-center gap-2 text-sm text-gray-700 mb-4">
-          <span className="text-blue-700">🔒</span>
-          Your information is protected
         </div>
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
@@ -106,7 +101,7 @@ export default function AuthPage() {
 
         {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
 
-        <div className="my-6 text-center text-gray-500 text-sm flex items-center gap-4">
+        {/* <div className="my-6 text-center text-gray-500 text-sm flex items-center gap-4">
           <hr className="flex-1 border-gray-300" />
           <span>Or continue with</span>
           <hr className="flex-1 border-gray-300" />
@@ -115,7 +110,7 @@ export default function AuthPage() {
         <button className="flex items-center justify-center gap-3 w-full border py-3 rounded-md">
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="google" />
           google
-        </button>
+        </button> */}
       </div>
     </div>
   );

@@ -11,12 +11,13 @@ interface GetMyAccountResponse {
 export default function TransferPage() {
   const [fromAccountNumber, setFromAccountNumber] = useState("");
   const [toAccountNumber, setToAccountNumber] = useState("");
-  const [amount, setAmount] = useState(""); // ✅ 문자열로 바꿔서 0 제거
+  const [amount, setAmount] = useState(""); 
   const [memo, setMemo] = useState("");
   const [message, setMessage] = useState("");
+  const [balance, setBalance] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  // 🔑 내 계좌 가져오기
+  // 🔑 내 계좌 정보 조회
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
@@ -26,27 +27,48 @@ export default function TransferPage() {
             Authorization: `Bearer ${token}`,
           },
         })
-        .then((res) => setFromAccountNumber(res.data[0].accountNumber))
+        .then((res) => {
+          setFromAccountNumber(res.data[0].accountNumber);
+          setBalance(res.data[0].balance);
+        })
         .catch(() => setMessage("❌ 계좌 정보를 가져오지 못했습니다."));
     }
   }, []);
 
-  const handleTransfer = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return alert("❌ 인증 토큰이 없습니다. 다시 로그인 해주세요.");
+  // 🧾 송금 처리
+  const handleTransfer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage("");
 
-    if (!toAccountNumber || !amount || Number(amount) <= 0) {
-      setMessage("❌ 계좌번호와 금액을 올바르게 입력해주세요.");
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setMessage("❌ 인증 토큰이 없습니다. 다시 로그인 해주세요.");
+      return;
+    }
+
+    const amountNumber = Number(amount);
+
+    // 유효성 검사
+    if (!toAccountNumber) {
+      setMessage("❌ 받는 사람 계좌번호를 입력해주세요.");
+      return;
+    }
+    if (!amount || isNaN(amountNumber) || amountNumber <= 0) {
+      setMessage("❌ 유효한 송금 금액을 입력해주세요.");
+      return;
+    }
+    if (balance !== null && amountNumber > balance) {
+      setMessage("❌ 잔액을 초과한 금액입니다.");
       return;
     }
 
     try {
-      const res = await axios.post(
+      await axios.post(
         "/transactions/transfer",
         {
           fromAccountNumber,
           toAccountNumber,
-          amount: Number(amount),
+          amount: amountNumber,
           memo,
         },
         {
@@ -55,10 +77,9 @@ export default function TransferPage() {
           },
         }
       );
-      alert("✅ 송금 완료!");
       navigate("/transactions");
     } catch (err) {
-      alert("❌ 송금 실패!");
+      setMessage("❌ 송금 실패. 다시 시도해주세요.");
     }
   };
 
@@ -75,8 +96,13 @@ export default function TransferPage() {
       </div>
 
       <h1 className="text-2xl font-bold mb-6">💳 송금하기</h1>
+      {balance !== null && (
+        <p className="mb-4 text-gray-700 text-lg">
+          현재 잔액: <span className="font-semibold text-blue-700">{balance.toLocaleString()}원</span>
+        </p>
+      )}
 
-      <div className="w-full max-w-md flex flex-col gap-4">
+      <form onSubmit={handleTransfer} className="w-full max-w-md flex flex-col gap-4">
         <input
           type="text"
           value={fromAccountNumber}
@@ -99,20 +125,20 @@ export default function TransferPage() {
         />
         <input
           type="text"
-          placeholder="메모"
+          placeholder="메모 (선택사항)"
           value={memo}
           onChange={(e) => setMemo(e.target.value)}
           className="border px-4 py-2 rounded-md"
         />
         <button
-          onClick={handleTransfer}
+          type="submit"
           className="bg-blue-700 hover:bg-blue-800 text-white w-full py-3 rounded-md font-semibold"
         >
           송금
         </button>
 
-        {message && <p className="text-red-500 text-sm text-center">{message}</p>}
-      </div>
+        {message && <p className="mt-4 text-red-500 text-sm text-center">{message}</p>}
+      </form>
     </div>
   );
 }

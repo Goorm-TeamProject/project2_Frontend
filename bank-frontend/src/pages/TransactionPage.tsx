@@ -106,17 +106,21 @@ export default function TransactionPage() {
         {transactions.length === 0 ? (
           <p className="text-gray-600">거래 내역이 없습니다.</p>
         ) : (
-            <ul className="divide-y divide-gray-200">
+          <ul className="divide-y divide-gray-200">
             {transactions.map((tx, index) => (
               <li key={index} className="py-4">
-                <p>
-                  <strong>{tx.type}</strong> | {tx.amount.toLocaleString()}원 | 잔액:{" "}
-                  {tx.balanceAfter.toLocaleString()}원 | {new Date(tx.createdAt).toLocaleString()}
+                <p className="font-semibold">
+                  <strong>{tx.type}</strong> | {tx.amount.toLocaleString()}원 | 잔액: {tx.balanceAfter.toLocaleString()}원 |{" "}
+                  {new Date(tx.createdAt).toLocaleString()}
                 </p>
-                <p className="text-sm text-gray-500">메모: {tx.memo}</p>
+                {tx.memo && (
+                  <p className="text-sm text-gray-500">메모: {tx.memo}</p>
+                )}
               </li>
             ))}
           </ul>
+
+
         )}
         {message && <p className="text-red-600 mt-4">{message}</p>}
       </div>
