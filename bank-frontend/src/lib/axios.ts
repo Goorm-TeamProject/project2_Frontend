@@ -1,9 +1,10 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: import.meta.env.BASE_URL, // 백엔드 주소
-  withCredentials: true, // 필요 시 쿠키 사용
+  baseURL: import.meta.env.VITE_BASE_URL,
+  withCredentials: true,
 });
+
 
 instance.interceptors.request.use(
     (config) => {
