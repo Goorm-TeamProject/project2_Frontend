@@ -17,38 +17,22 @@ export default function TransferPage() {
   const [balance, setBalance] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  // 🔑 내 계좌 정보 조회
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      axios
-        .get<GetMyAccountResponse[]>("/accounts/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((res) => {
-          setFromAccountNumber(res.data[0].accountNumber);
-          setBalance(res.data[0].balance);
-        })
-        .catch(() => setMessage("❌ 계좌 정보를 가져오지 못했습니다."));
-    }
+    axios
+      .get<GetMyAccountResponse[]>("/accounts/me")
+      .then((res) => {
+        setFromAccountNumber(res.data[0].accountNumber);
+        setBalance(res.data[0].balance);
+      })
+      .catch(() => setMessage("❌ 계좌 정보를 가져오지 못했습니다."));
   }, []);
 
-  // 🧾 송금 처리
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
 
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      setMessage("❌ 인증 토큰이 없습니다. 다시 로그인 해주세요.");
-      return;
-    }
-
     const amountNumber = Number(amount);
 
-    // 유효성 검사
     if (!toAccountNumber) {
       setMessage("❌ 받는 사람 계좌번호를 입력해주세요.");
       return;
@@ -63,20 +47,13 @@ export default function TransferPage() {
     }
 
     try {
-      await axios.post(
-        "/transactions/transfer",
-        {
-          fromAccountNumber,
-          toAccountNumber,
-          amount: amountNumber,
-          memo,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.post("/transactions/transfer", {
+        fromAccountNumber,
+        toAccountNumber,
+        amount: amountNumber,
+        memo,
+      });
+
       navigate("/transactions");
     } catch (err) {
       setMessage("❌ 송금 실패. 다시 시도해주세요.");
@@ -85,7 +62,6 @@ export default function TransferPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
-      {/* 🏠 홈 버튼 */}
       <div className="fixed top-6 right-6 z-50">
         <button
           onClick={() => navigate("/transactions")}
@@ -96,9 +72,13 @@ export default function TransferPage() {
       </div>
 
       <h1 className="text-2xl font-bold mb-6">💳 송금하기</h1>
+
       {balance !== null && (
         <p className="mb-4 text-gray-700 text-lg">
-          현재 잔액: <span className="font-semibold text-blue-700">{balance.toLocaleString()}원</span>
+          현재 잔액:{" "}
+          <span className="font-semibold text-blue-700">
+            {balance.toLocaleString()}원
+          </span>
         </p>
       )}
 

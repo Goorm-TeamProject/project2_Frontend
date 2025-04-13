@@ -28,12 +28,7 @@ export default function TransactionPage() {
   // 🧾 로그아웃
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
-      if (token) {
-        await axios.post("/logout", {}, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
+      await axios.post("/logout");
       localStorage.removeItem("accessToken");
       navigate("/");
     } catch (err) {
@@ -48,9 +43,7 @@ export default function TransactionPage() {
     if (!token) return;
 
     // 계좌 정보 불러오기
-    axios.get<Account[]>("/accounts/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    axios.get<Account[]>("/accounts/me")
       .then((res) => {
         const myFirstAccount = res.data[0]; // 첫 번째 계좌만 표시
         setAccountInfo(myFirstAccount);
@@ -60,9 +53,7 @@ export default function TransactionPage() {
       });
 
     // 거래 내역 불러오기
-    axios.get<Transaction[]>("/transactions", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    axios.get<Transaction[]>("/transactions")
       .then((res) => {
         const sorted = res.data.sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -119,8 +110,6 @@ export default function TransactionPage() {
               </li>
             ))}
           </ul>
-
-
         )}
         {message && <p className="text-red-600 mt-4">{message}</p>}
       </div>

@@ -1,5 +1,3 @@
-// 로그인 + 회원가입 API 연동, 토큰 저장, 계좌 자동 생성, 페이지 이동 처리
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../lib/axios";
@@ -25,11 +23,8 @@ export default function AuthPage() {
         localStorage.setItem("accessToken", token);
 
         try {
-          await axios.post(
-            "/accounts",
-            { balance: 100000 },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          // 💡 axios 인스턴스에서 자동으로 토큰 붙이므로 headers 제거
+          await axios.post("/accounts", { balance: 100000 });
         } catch (err) {
           console.log("⚠️ 계좌 생성 실패 또는 이미 존재", err);
         }
@@ -46,7 +41,7 @@ export default function AuthPage() {
     }
   };
 
-  return ( 
+  return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4">
       <div className="text-left w-full max-w-md mb-6">
         <h1 className="text-4xl font-bold">
@@ -100,17 +95,6 @@ export default function AuthPage() {
         </form>
 
         {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
-
-        {/* <div className="my-6 text-center text-gray-500 text-sm flex items-center gap-4">
-          <hr className="flex-1 border-gray-300" />
-          <span>Or continue with</span>
-          <hr className="flex-1 border-gray-300" />
-        </div>
-
-        <button className="flex items-center justify-center gap-3 w-full border py-3 rounded-md">
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="google" />
-          google
-        </button> */}
       </div>
     </div>
   );

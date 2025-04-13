@@ -17,27 +17,16 @@ export default function WithdrawPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      axios
-        .get<GetMyAccountResponse[]>("/accounts/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          setAccountNumber(res.data[0].accountNumber);
-          setBalance(res.data[0].balance);
-        })
-        .catch(() => setMessage("❌ 계좌 정보를 가져오지 못했습니다."));
-    }
+    axios
+      .get<GetMyAccountResponse[]>("/accounts/me")
+      .then((res) => {
+        setAccountNumber(res.data[0].accountNumber);
+        setBalance(res.data[0].balance);
+      })
+      .catch(() => setMessage("❌ 계좌 정보를 가져오지 못했습니다."));
   }, []);
 
   const handleWithdraw = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      setMessage("❌ 로그인 후 이용해주세요.");
-      return;
-    }
-
     const amountNumber = Number(amount);
 
     if (!amount || isNaN(amountNumber)) {
@@ -56,17 +45,11 @@ export default function WithdrawPage() {
     }
 
     try {
-      await axios.post(
-        "/transactions/withdraw",
-        {
-          fromAccountNumber: accountNumber,
-          amount: amountNumber,
-          memo,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await axios.post("/transactions/withdraw", {
+        fromAccountNumber: accountNumber,
+        amount: amountNumber,
+        memo,
+      });
       navigate("/transactions");
     } catch (err) {
       console.error(err);
@@ -89,7 +72,10 @@ export default function WithdrawPage() {
 
       {balance !== null && (
         <p className="mb-4 text-gray-700 text-lg">
-          현재 잔액: <span className="font-semibold text-blue-700">{balance.toLocaleString()}원</span>
+          현재 잔액:{" "}
+          <span className="font-semibold text-blue-700">
+            {balance.toLocaleString()}원
+          </span>
         </p>
       )}
 
@@ -133,7 +119,9 @@ export default function WithdrawPage() {
           출금
         </button>
 
-        {message && <p className="mt-4 text-red-500 text-sm text-center">{message}</p>}
+        {message && (
+          <p className="mt-4 text-red-500 text-sm text-center">{message}</p>
+        )}
       </form>
     </div>
   );

@@ -28,20 +28,13 @@ export default function DepositPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      axios
-        .get<GetMyAccountResponse[]>("/accounts/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((res) => {
-          setAccountNumber(res.data[0].accountNumber);
-          setBalance(res.data[0].balance);
-        })
-        .catch(() => setMessage("❌ 계좌 정보를 가져오지 못했습니다."));
-    }
+    axios
+      .get<GetMyAccountResponse[]>("/accounts/me")
+      .then((res) => {
+        setAccountNumber(res.data[0].accountNumber);
+        setBalance(res.data[0].balance);
+      })
+      .catch(() => setMessage("❌ 계좌 정보를 가져오지 못했습니다."));
   }, []);
 
   const handleDeposit = async (e: React.FormEvent) => {
@@ -49,29 +42,17 @@ export default function DepositPage() {
     setMessage("");
 
     const numericAmount = Number(amount);
-
     if (isNaN(numericAmount) || numericAmount <= 0) {
       setMessage("❌ 입금 금액은 0보다 커야 합니다.");
       return;
     }
 
     try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) return setMessage("❌ 인증 토큰이 없습니다. 다시 로그인 해주세요.");
-
-      await axios.post<DepositResponse>(
-        "/transactions/deposit",
-        {
-          toAccountNumber: accountNumber,
-          amount: numericAmount,
-          memo: memo.trim(),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.post<DepositResponse>("/transactions/deposit", {
+        toAccountNumber: accountNumber,
+        amount: numericAmount,
+        memo: memo.trim(),
+      });
 
       navigate("/transactions");
     } catch (err: any) {
@@ -84,7 +65,6 @@ export default function DepositPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
-      {/* 홈 버튼 */}
       <div className="fixed top-6 right-6 z-50">
         <button
           onClick={() => navigate("/transactions")}
@@ -96,7 +76,6 @@ export default function DepositPage() {
 
       <h2 className="text-3xl font-bold mb-6">💰 입금하기</h2>
 
-      {/* 현재 잔액 표시 */}
       {balance !== null && (
         <p className="mb-4 text-gray-700 text-lg">
           현재 잔액:{" "}
@@ -106,7 +85,6 @@ export default function DepositPage() {
         </p>
       )}
 
-      {/* 입금 폼 */}
       <form onSubmit={handleDeposit} className="flex flex-col gap-4 w-full max-w-md">
         <input
           type="text"
@@ -137,7 +115,6 @@ export default function DepositPage() {
           입금하기
         </button>
 
-        {/* 에러 메시지 */}
         {message && (
           <p className="mt-4 text-center text-sm text-red-600">{message}</p>
         )}
