@@ -3,6 +3,8 @@
 export interface LoginResponse {
     userId: number;
     accessToken: string;
+    refreshToken: string;
+    mfaRegistered: boolean;
   }
   
   export interface JoinResponse {

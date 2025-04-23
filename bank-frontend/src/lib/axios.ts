@@ -10,9 +10,9 @@ const instance = axios.create({
 
 instance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
-    
-    // join, login 요청엔 Authorization 생략
+    const token =
+      localStorage.getItem("accessToken") || localStorage.getItem("tempAccessToken");
+
     if (token && config.headers && !config.url?.includes("/join") && !config.url?.includes("/login")) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -21,6 +21,7 @@ instance.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
 
 
 export default instance;
