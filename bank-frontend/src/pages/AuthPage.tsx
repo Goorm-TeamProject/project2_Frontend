@@ -34,7 +34,7 @@ export default function AuthPage() {
 
   const handleLogin = async () => {
     try {
-      const res = await axiosInstance.post<LoginResponse>("/login", { email, password });
+      const res = await axiosInstance.post<LoginResponse>("/users/login", { email, password });
       const { accessToken, refreshToken } = res.data;
 
       // — 여기가 빠져 있었음!
@@ -47,7 +47,7 @@ export default function AuthPage() {
       localStorage.setItem("tempRefreshToken", refreshToken);
 
       // (2) MFA setup 호출 → refreshToken을 직접 달아서 보냄
-      const otpRes = await axiosInstance.get<{ otpUrl: string }>("/mfa/setup", {
+      const otpRes = await axiosInstance.get<{ otpUrl: string }>("/users/mfa/setup", {
         headers: { Authorization: `Bearer ${refreshToken}` }
       });
       
@@ -64,12 +64,10 @@ export default function AuthPage() {
 
 
 
-
-
   const handleMfaVerify = async () => {
     try {
       const token = localStorage.getItem("tempAccessToken");
-      const res = await axiosInstance.post("/mfa/verify", {
+      const res = await axiosInstance.post("/users/mfa/verify", {
         email,
         code: parseInt(mfaCode, 10)
       }, {
@@ -90,7 +88,7 @@ export default function AuthPage() {
 
   const handleRegister = async () => {
     try {
-      const res = await axiosInstance.post<JoinResponse>("/join", { name, email, password });
+      const res = await axiosInstance.post<JoinResponse>("/users/join", { name, email, password });
       console.log("✅ 회원가입 성공:", res.data);
 
       alert("회원가입 성공! 로그인해주세요.");

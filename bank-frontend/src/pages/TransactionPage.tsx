@@ -28,7 +28,7 @@ export default function TransactionPage() {
   // 🧾 로그아웃
   const handleLogout = async () => {
     try {
-      await axios.post("/logout");
+      await axios.post("/users/logout");
       localStorage.removeItem("accessToken");
       navigate("/");
     } catch (err) {

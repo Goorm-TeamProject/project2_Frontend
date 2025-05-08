@@ -44,18 +44,15 @@ export default function WithdrawPage() {
       return;
     }
 
-    try {
+    
       await axios.post("/transactions/withdraw", {
         fromAccountNumber: accountNumber,
         amount: amountNumber,
         memo,
       });
       navigate("/transactions");
-    } catch (err) {
-      console.error(err);
-      setMessage("❌ 출금 중 문제가 발생했습니다. 다시 시도해주세요.");
-    }
-  };
+    } 
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">

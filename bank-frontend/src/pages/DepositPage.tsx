@@ -47,21 +47,15 @@ export default function DepositPage() {
       return;
     }
 
-    try {
-      await axios.post<DepositResponse>("/transactions/deposit", {
+  
+    await axios.post<DepositResponse>("/transactions/deposit", {
         toAccountNumber: accountNumber,
         amount: numericAmount,
         memo: memo.trim(),
       });
 
       navigate("/transactions");
-    } catch (err: any) {
-      const status = err.response?.status;
-      if (status === 403) setMessage("❌ 본인의 계좌만 입금할 수 없습니다.");
-      else if (status === 404) setMessage("❌ 계좌를 찾을 수 없습니다.");
-      else setMessage("❌ 입금 중 오류가 발생했습니다.");
-    }
-  };
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
