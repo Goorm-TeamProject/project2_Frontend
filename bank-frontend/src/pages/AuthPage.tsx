@@ -37,19 +37,9 @@ export default function AuthPage() {
       const res = await axiosInstance.post<LoginResponse>("/login", { email, password });
       const { accessToken, refreshToken } = res.data;
 
-      // — 여기가 빠져 있었음!
-      // interceptor가 다음 요청에 accessToken을 붙이도록
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-
-      // MFA 단계용 임시 토큰
-      localStorage.setItem("tempAccessToken", accessToken);
-      localStorage.setItem("tempRefreshToken", refreshToken);
 
       // (2) MFA setup 호출 → refreshToken을 직접 달아서 보냄
-      const otpRes = await axiosInstance.get<{ otpUrl: string }>("/mfa/setup", {
-        headers: { Authorization: `Bearer ${refreshToken}` }
-      });
+      const otpRes = await axiosInstance.get<{ otpUrl: string }>("/mfa/setup");
       
       setOtpUrl(otpRes.data.otpUrl);
       setMfaStep(true);
@@ -66,18 +56,11 @@ export default function AuthPage() {
 
   const handleMfaVerify = async () => {
     try {
-      const token = localStorage.getItem("tempAccessToken");
       const res = await axiosInstance.post("/mfa/verify", {
         email,
         code: parseInt(mfaCode, 10)
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
       });
 
-      localStorage.setItem("accessToken", token!);
-      localStorage.removeItem("tempAccessToken");
       navigate("/transactions");
     } catch (err) {
       handleAxiosError(err, {
@@ -180,7 +163,7 @@ export default function AuthPage() {
 
         {otpUrl && (
           <div className="mt-4 p-4 bg-white rounded shadow">
-            <p className="mb-2 font-medium">MFA 등록을 위해 QR 코드를 스캔하세요:</p>
+            <p className="mb-2 font-medium">MFA 등록을 위해 QR 코드를 스캔하세요!:</p>
             <QRCode value={otpUrl} />
             <p className="mt-2 text-sm text-gray-600 break-all">{otpUrl}</p>
           </div>
