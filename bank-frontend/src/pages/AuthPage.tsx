@@ -157,7 +157,7 @@ export default function AuthPage() {
             />
           )}
           <button type="submit" className="bg-blue-800 text-white py-3 rounded-md text-lg font-semibold">
-            {mfaStep ? "Verify MFA" : isLogin ? 'Sign in' : 'Register'}
+            {mfaStep ? "Verify MFA" : isLogin ? 'Sign in' : 'Register'
           </button>
         </form>
 
