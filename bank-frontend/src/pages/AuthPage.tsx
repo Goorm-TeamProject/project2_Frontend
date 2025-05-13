@@ -163,7 +163,7 @@ export default function AuthPage() {
 
         {otpUrl && (
           <div className="mt-4 p-4 bg-white rounded shadow">
-            <p className="mb-2 font-medium">MFA 등록을 위해 QR 코드를 스캔하세요!:</p>
+            <p className="mb-2 font-medium">MFA 등록을 위해 QR 코드를 스캔하세요:</p>
             <QRCode value={otpUrl} />
             <p className="mt-2 text-sm text-gray-600 break-all">{otpUrl}</p>
           </div>
