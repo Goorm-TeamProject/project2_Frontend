@@ -2,26 +2,13 @@ import axios from "axios";
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
-  withCredentials: true,
+  withCredentials: true, // ✅ 쿠키 전송 허용
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-instance.interceptors.request.use(
-  (config) => {
-    const token =
-      localStorage.getItem("accessToken") || localStorage.getItem("tempAccessToken");
-
-    if (token && config.headers && !config.url?.includes("/join") && !config.url?.includes("/login")) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-
+// ❌ Authorization 헤더 추가 로직 제거
+// ✅ interceptor 삭제해도 됨
 
 export default instance;

@@ -4,9 +4,8 @@ import axiosInstance from "../lib/axios";
 import { LoginResponse, JoinResponse } from "../src/auth";
 import QRCode from "react-qr-code";
 
-import axios from "axios";
-
 export default function AuthPage() {
+  const [token, setToken] = useState<string>("");
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,47 +19,48 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
     if (isLogin) {
-      if (mfaStep) {
-        await handleMfaVerify();
-      } else {
-        await handleLogin();
-      }
+      mfaStep ? await handleMfaVerify() : await handleLogin();
     } else {
       await handleRegister();
     }
   };
 
   const handleLogin = async () => {
-    try {
-      const res = await axiosInstance.post<LoginResponse>("/login", { email, password });
-      const { accessToken, refreshToken } = res.data;
+  try {
+    const res = await axiosInstance.post<LoginResponse>("/login", { email, password }, {
+      withCredentials: true
+    });
 
+    console.log("[AuthPage] login response data:", res.data);
 
-      // (2) MFA setup 호출 → refreshToken을 직접 달아서 보냄
-      const otpRes = await axiosInstance.get<{ otpUrl: string }>("/mfa/setup");
-      
-      setOtpUrl(otpRes.data.otpUrl);
-      setMfaStep(true);
+    // MFA setup 요청
+    const otpRes = await axiosInstance.get<{ otpUrl: string }>("/mfa/setup", {
+      withCredentials: true
+    });
 
-    } catch (err) {
-      handleAxiosError(err, {
-        403: "접근이 거부되었습니다. 인증되지 않은 사용자입니다.",
-        default: "로그인 실패: 이메일 또는 비밀번호를 확인해주세요.",
-      });
-    }
-  };
+    console.log("[AuthPage] otp response:", otpRes.data);  // ✅ 이게 제대로 찍혀야 함
 
+    setOtpUrl(otpRes.data.otpUrl);
+    setMfaStep(true);  // ✅ 반드시 true로 바뀌어야 함
+    console.log("✅ MFA 단계 진입 완료");
+
+  } catch (err) {
+    handleAxiosError(err, {
+      403: "접근이 거부되었습니다. 인증되지 않은 사용자입니다.",
+      default: "로그인 실패: 이메일 또는 비밀번호를 확인해주세요.",
+    });
+  }
+};
 
 
   const handleMfaVerify = async () => {
     try {
-      const res = await axiosInstance.post("/mfa/verify", {
-        email,
-        code: parseInt(mfaCode, 10)
-      });
-
+      await axiosInstance.post(
+        "/mfa/verify",
+        { email, code: parseInt(mfaCode, 10) },
+        { withCredentials: true } // ✅ 쿠키 인증
+      );
       navigate("/transactions");
     } catch (err) {
       handleAxiosError(err, {
@@ -73,7 +73,6 @@ export default function AuthPage() {
     try {
       const res = await axiosInstance.post<JoinResponse>("/join", { name, email, password });
       console.log("✅ 회원가입 성공:", res.data);
-
       alert("회원가입 성공! 로그인해주세요.");
       setIsLogin(true);
     } catch (err) {
@@ -157,7 +156,7 @@ export default function AuthPage() {
             />
           )}
           <button type="submit" className="bg-blue-800 text-white py-3 rounded-md text-lg font-semibold">
-            {mfaStep ? "Verify MFA" : isLogin ? 'Sign in' : 'Register'} 
+            {mfaStep ? "Verify MFA" : isLogin ? 'Sign in' : 'Register'}
           </button>
         </form>
 
@@ -168,7 +167,6 @@ export default function AuthPage() {
             <p className="mt-2 text-sm text-gray-600 break-all">{otpUrl}</p>
           </div>
         )}
-
 
         {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
       </div>
