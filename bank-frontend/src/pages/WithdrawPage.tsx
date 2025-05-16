@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "../lib/axios";
+import axiosInstance from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 
 interface GetMyAccountResponse {
@@ -17,7 +17,7 @@ export default function WithdrawPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
+    axiosInstance
       .get<GetMyAccountResponse[]>("/accounts/me")
       .then((res) => {
         setAccountNumber(res.data[0].accountNumber);
@@ -45,7 +45,7 @@ export default function WithdrawPage() {
     }
 
     
-      await axios.post("/transactions/withdraw", {
+      await axiosInstance.post("/transactions/withdraw", {
         fromAccountNumber: accountNumber,
         amount: amountNumber,
         memo,

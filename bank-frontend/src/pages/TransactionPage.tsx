@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "../lib/axios";
+import axiosInstance from "../lib/axios";  
 import { useNavigate } from "react-router-dom";
 
 interface Transaction {
@@ -28,8 +28,7 @@ export default function TransactionPage() {
   // 🧾 로그아웃
   const handleLogout = async () => {
     try {
-      await axios.post("/users/logout");
-      localStorage.removeItem("accessToken");
+      await axiosInstance.post("/logout"); 
       navigate("/");
     } catch (err) {
       console.error("❌ 로그아웃 실패:", err);
@@ -37,34 +36,30 @@ export default function TransactionPage() {
     }
   };
 
-  // 🏦 계좌 정보 + 거래 내역 불러오기
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
+ useEffect(() => {
+  console.log("🔔 [TransactionPage] mounted");
 
-    // 계좌 정보 불러오기
-    axios.get<Account[]>("/accounts/me")
-      .then((res) => {
-        const myFirstAccount = res.data[0]; // 첫 번째 계좌만 표시
-        setAccountInfo(myFirstAccount);
-      })
-      .catch(() => {
-        setMessage("❌ 계좌 정보를 불러오지 못했습니다.");
-      });
+  console.log("👉 [TransactionPage] fetching GET /accounts/me");
+  axiosInstance
+    .get<Account[]>("/accounts/me")    // ← Account[]라고 명시
+    .then((res) => {
+      console.log("✅ /accounts/me:", res.data);
+      setAccountInfo(res.data[0]);
+    })
+    .catch(/* … */);
 
-    // 거래 내역 불러오기
-    axios.get<Transaction[]>("/transactions")
-      .then((res) => {
-        const sorted = res.data.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setTransactions(sorted);
-      })
-      .catch((err) => {
-        console.error("💥 거래 내역 오류:", err);
-        setMessage("❌ 거래 내역을 불러오지 못했습니다.");
-      });
-  }, []);
+  console.log("👉 [TransactionPage] fetching GET /transactions");
+  axiosInstance
+    .get<Transaction[]>("/transactions")  // ← Transaction[]라고 명시
+    .then((res) => {
+      console.log("✅ /transactions:", res.data);
+      const sorted = res.data.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setTransactions(sorted);
+    })
+    .catch(/* … */);
+}, []);
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">

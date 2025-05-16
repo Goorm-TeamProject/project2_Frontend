@@ -26,45 +26,53 @@ export default function AuthPage() {
     }
   };
 
-  const handleLogin = async () => {
-  try {
-    const res = await axiosInstance.post<LoginResponse>("/login", { email, password }, {
-      withCredentials: true
-    });
+    const handleLogin = async () => {
+    console.log("👉 [AuthPage] About to call POST /login", { email, password });
+    try {
+      const res = await axiosInstance.post<LoginResponse>(
+        "/login",
+        { email, password },
+        { withCredentials: true }
+      );
+      console.log("✅ [AuthPage] login response data:", res.data);
 
-    console.log("[AuthPage] login response data:", res.data);
+      console.log("👉 [AuthPage] About to call GET /mfa/setup");
+      const otpRes = await axiosInstance.get<{ otpUrl: string }>(
+        "/mfa/setup",
+        { withCredentials: true }
+      );
+      console.log("✅ [AuthPage] /mfa/setup response:", otpRes.data);
 
-    // MFA setup 요청
-    const otpRes = await axiosInstance.get<{ otpUrl: string }>("/mfa/setup", {
-      withCredentials: true
-    });
-
-    console.log("[AuthPage] otp response:", otpRes.data);  // ✅ 이게 제대로 찍혀야 함
-
-    setOtpUrl(otpRes.data.otpUrl);
-    setMfaStep(true);  // ✅ 반드시 true로 바뀌어야 함
-    console.log("✅ MFA 단계 진입 완료");
-
-  } catch (err) {
-    handleAxiosError(err, {
-      403: "접근이 거부되었습니다. 인증되지 않은 사용자입니다.",
-      default: "로그인 실패: 이메일 또는 비밀번호를 확인해주세요.",
-    });
-  }
-};
-
+      setOtpUrl(otpRes.data.otpUrl);
+      setMfaStep(true);
+      console.log("✅ [AuthPage] MFA step entered");
+    } catch (err) {
+      console.error("❌ [AuthPage] login or setup error:", err);
+      handleAxiosError(err, {
+        403: "접근이 거부되었습니다. 인증되지 않은 사용자입니다.",
+        default: "로그인 실패: 이메일 또는 비밀번호를 확인해주세요.",
+      });
+    }
+  };
 
   const handleMfaVerify = async () => {
+    console.log("👉 [AuthPage] About to call POST /mfa/verify", {
+      email,
+      code: parseInt(mfaCode, 10),
+    });
     try {
-      await axiosInstance.post(
+      const res = await axiosInstance.post(
         "/mfa/verify",
         { email, code: parseInt(mfaCode, 10) },
-        { withCredentials: true } // ✅ 쿠키 인증
+        { withCredentials: true }
       );
+      console.log("✅ [AuthPage] /mfa/verify response:", res);
+      console.log("👉 [AuthPage] navigating to /transactions");
       navigate("/transactions");
     } catch (err) {
+      console.error("❌ [AuthPage] MFA verify error:", err);
       handleAxiosError(err, {
-        default: "MFA 인증에 실패했습니다. 코드를 확인해주세요."
+        default: "MFA 인증에 실패했습니다. 코드를 확인해주세요.",
       });
     }
   };

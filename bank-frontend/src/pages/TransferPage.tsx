@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "../lib/axios";
+import axiosInstance from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 
 interface GetMyAccountResponse {
@@ -18,7 +18,7 @@ export default function TransferPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
+    axiosInstance
       .get<GetMyAccountResponse[]>("/accounts/me")
       .then((res) => {
         setFromAccountNumber(res.data[0].accountNumber);
@@ -47,7 +47,7 @@ export default function TransferPage() {
     }
 
     try {
-      await axios.post("/transactions/transfer", {
+      await axiosInstance.post("/transactions/transfer", {
         fromAccountNumber,
         toAccountNumber,
         amount: amountNumber,

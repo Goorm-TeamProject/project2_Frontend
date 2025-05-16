@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "../lib/axios";
+import axiosInstance from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 
 interface DepositResponse {
@@ -28,7 +28,7 @@ export default function DepositPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
+    axiosInstance
       .get<GetMyAccountResponse[]>("/accounts/me")
       .then((res) => {
         setAccountNumber(res.data[0].accountNumber);
@@ -48,7 +48,7 @@ export default function DepositPage() {
     }
 
   
-    await axios.post<DepositResponse>("/transactions/deposit", {
+    await axiosInstance.post<DepositResponse>("/transactions/deposit", {
         toAccountNumber: accountNumber,
         amount: numericAmount,
         memo: memo.trim(),
