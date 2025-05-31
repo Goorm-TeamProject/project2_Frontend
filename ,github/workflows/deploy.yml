@@ -2,7 +2,7 @@ name: Deploy Vite App to S3
 
 on:
   push:
-    branches: [ main ]  # 필요시 브랜치 수정
+    branches: [ main ]  # 브랜치
   workflow_dispatch:
 
 jobs:
