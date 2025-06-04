@@ -20,6 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: bank-frontend/package.json
 
       - name: Build Vite App
         run: npm run build
