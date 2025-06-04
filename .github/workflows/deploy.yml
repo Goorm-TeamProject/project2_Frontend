@@ -2,8 +2,8 @@ name: Deploy Vite App to S3
 
 on:
   push:
-    branches: [ main ]  # 브랜치
-  workflow_dispatch:
+    branches: [ main ]  # main 브랜치에 push될 때 작동
+  workflow_dispatch:     # 수동 실행도 가능
 
 jobs:
   deploy:
@@ -16,10 +16,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18  # Vite 프로젝트에 맞춰 조정
+          node-version: 18  # Vite 프로젝트용
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci  # 더 안정적인 lockfile 기반 설치 (npm install → npm ci)
 
       - name: Build Vite App
         run: npm run build
