@@ -28,7 +28,7 @@ export default function TransactionPage() {
   // 🧾 로그아웃
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/logout"); 
+      await axiosInstance.post("users/logout"); 
       navigate("/");
     } catch (err) {
       console.error("❌ 로그아웃 실패:", err);
@@ -50,7 +50,7 @@ export default function TransactionPage() {
 
   console.log("👉 [TransactionPage] fetching GET /transactions");
   axiosInstance
-    .get<Transaction[]>("/transactions")  // ← Transaction[]라고 명시
+    .get<Transaction[]>("/transactions")  
     .then((res) => {
       console.log("✅ /transactions:", res.data);
       const sorted = res.data.sort(
